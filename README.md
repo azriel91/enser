@@ -1,5 +1,10 @@
 # ✒️ enser
 
+[![Crates.io](https://img.shields.io/crates/v/enser.svg)](https://crates.io/crates/enser)
+[![docs.rs](https://img.shields.io/docsrs/enser)](https://docs.rs/enser)
+[![CI](https://github.com/azriel91/enser/workflows/CI/badge.svg)](https://github.com/azriel91/enser/actions/workflows/ci.yml)
+[![Coverage Status](https://codecov.io/gh/azriel91/enser/branch/main/graph/badge.svg)](https://codecov.io/gh/azriel91/enser)
+
 Enum Serialization with Tag
 
 
