@@ -3,10 +3,21 @@ name = "enser"
 version = "0.1.0"
 authors = ["Azriel Hoh <azriel91@gmail.com>"]
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "Enum serialization with tag"
+repository = "https://github.com/azriel91/enser"
+documentation = "https://docs.rs/enser/"
+readme = "README.md"
+categories = ["encoding"]
+keywords = ["enum", "tag", "serde"]
+license = "MIT OR Apache-2.0"
 
 [dependencies]
+enser_derive = { path = "enser_derive", version = "0.1.0" }
+
+[dev-dependencies]
 serde = { version = "1.0.152", features = ["derive"] }
 serde_json = { version = "1.0.91" }
 serde_yaml = "0.9.16"
+
+[workspace]
+members = ["enser_derive"]

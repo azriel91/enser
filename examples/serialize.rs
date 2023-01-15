@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 struct Struct {
     without_tuple: Vec<WithoutTuple>,
     with_tuple: Vec<WithTuple>,
+    enser: Vec<Enser>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -20,6 +21,14 @@ enum WithTuple {
     Some(u32),
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+#[enser::enser]
+enum Enser {
+    Tbd,
+    None,
+    Some(u32),
+}
+
 fn main() {
     let s = Struct {
         without_tuple: vec![
@@ -32,6 +41,7 @@ fn main() {
             WithTuple::None(()),
             WithTuple::Some(123),
         ],
+        enser: vec![Enser::Tbd, Enser::None, Enser::Some(123)],
     };
 
     let yaml = serde_yaml::to_string(&s).unwrap();
@@ -54,6 +64,10 @@ fn main() {
     // - !Tbd null
     // - !None null
     // - !Some 123
+    // enser:
+    // - Tbd
+    // - None
+    // - !Some 123
     //
     // {
     //   "without_tuple": [
@@ -64,6 +78,11 @@ fn main() {
     //   "with_tuple": [
     //     { "Tbd": null },
     //     { "None": null },
+    //     { "Some": 123 }
+    //   ],
+    //   "enser": [
+    //     "Tbd",
+    //     "None",
     //     { "Some": 123 }
     //   ]
     // }
