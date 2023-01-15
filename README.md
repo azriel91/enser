@@ -3,26 +3,50 @@
 Enum Serialization with Tag
 
 
+## Usage
+
+Add the following to `Cargo.toml`
+
+```toml
+enser = "0.1.0"
+```
+
+```diff
+  #[derive(Debug, Deserialize, Serialize)]
++ #[enser::enser]
+  enum MyEnum {
+      Tbd,
+      None,
+      Some(u32),
+      Named { value: u32 },
+  }
+```
+
+
 ## Rationale
 
-When serializing the following enum variants:
+Given the following enum:
 
 ```rust
-enum WithoutTuple {
+#[derive(Debug, Deserialize, Serialize)]
+enum MyEnum {
     Tbd,
     None,
     Some(u32),
+    Named { value: u32 },
 }
 ```
 
-The output is:
+When serializing `Vec<MyEnum>`, the output is:
 
 ```yaml
 # serde_yaml
-without_tuple:
+my_enums:
 - Tbd
 - None
 - !Some 123
+- !Named
+  value: 456
 
 # serde_json
 {
@@ -30,35 +54,53 @@ without_tuple:
     "Tbd",
     "None",
     { "Some": 123 }
+    { "Named": { "value": 456 } }
   ]
 }
 ```
 
-When we add an empty tuple to the variants:
+When the `#[enser::enser]` attribute is added:
 
-```rust
-enum WithTuple {
-    Tbd(()),
-    None(()),
-    Some(u32),
-}
+```diff
+  #[derive(Debug, Deserialize, Serialize)]
++ #[enser::enser]
+  enum MyEnum { .. }
 ```
 
 The output is:
 
 ```yaml
 # serde_yaml -- a !Tag is used for each variant
-with_tuple:
+my_enums:
 - !Tbd null
 - !None null
 - !Some 123
+- !Named
+  value: 456
 
 # serde_json -- every variant is an object
 {
-  "with_tuple": [
+  "my_enums": [
     { "Tbd": null },
     { "None": null },
-    { "Some": 123 }
+    { "Some": 123 },
+    { "Named": { "value": 456 } }
   ]
 }
 ```
+
+## License
+
+Licensed under either of
+
+* Apache License, Version 2.0, ([LICENSE-APACHE] or <https://www.apache.org/licenses/LICENSE-2.0>)
+* MIT license ([LICENSE-MIT] or <https://opensource.org/licenses/MIT>)
+
+at your option.
+
+### Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
+
+[LICENSE-APACHE]: LICENSE-APACHE
+[LICENSE-MIT]: LICENSE-MIT

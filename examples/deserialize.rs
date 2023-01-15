@@ -12,6 +12,7 @@ enum WithoutTuple {
     Tbd,
     None,
     Some(u32),
+    Named { value: u32 },
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -19,6 +20,7 @@ enum WithTuple {
     Tbd(()),
     None(()),
     Some(u32),
+    Named { value: u32 },
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -27,6 +29,7 @@ enum Enser {
     Tbd,
     None,
     Some(u32),
+    Named { value: u32 },
 }
 
 fn main() {
@@ -35,14 +38,21 @@ fn main() {
 - Tbd
 - None
 - !Some 123
+- !Named
+  value: 456
 with_tuple:
 - !Tbd null
 - !None null
 - !Some 123
+- !Named
+  value: 456
 enser:
 - Tbd
 - None
-- !Some 123"#,
+- !Some 123
+- !Named
+  value: 456
+"#,
     )
     .unwrap();
     println!("{from_yaml:?}");
@@ -52,20 +62,22 @@ enser:
   "without_tuple": [
     "Tbd",
     "None",
-    { "Some": 123 }
+    { "Some": 123 },
+    { "Named": { "value": 456 } }
   ],
   "with_tuple": [
     { "Tbd": null },
     { "None": null },
-    { "Some": 123 }
+    { "Some": 123 },
+    { "Named": { "value": 456 } }
   ],
   "enser": [
     "Tbd",
     "None",
-    { "Some": 123 }
+    { "Some": 123 },
+    { "Named": { "value": 456 } }
   ]
-}
-"#,
+}"#,
     )
     .unwrap();
     println!("{from_json:?}");
