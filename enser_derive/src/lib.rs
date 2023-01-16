@@ -9,7 +9,11 @@ use proc_macro::TokenStream;
 
 use proc_macro2::Ident;
 use proc_macro_roids::{FieldsExt, IdentExt};
-use syn::{parse_macro_input, Fields, ImplGenerics, ItemEnum, TypeGenerics, WhereClause};
+use syn::{
+    parse_macro_input, Fields, GenericParam, Generics, ImplGenerics, ItemEnum, PathSegment,
+    PredicateType, TraitBound, Type, TypeGenerics, TypeParam, TypeParamBound, TypePath,
+    WhereClause, WherePredicate,
+};
 
 #[proc_macro_attribute]
 pub fn enser(_args: TokenStream, input: TokenStream) -> TokenStream {
@@ -34,6 +38,118 @@ fn impl_enser_derive(the_enum: &mut ItemEnum) -> proc_macro2::TokenStream {
 
     // Variant -> Variant(())
     attach_tuple_to_unit_variants(&mut enser);
+
+    let Generics {
+        params,
+        where_clause,
+        ..
+    } = &mut the_enum.generics;
+    params.iter_mut().for_each(|generic_param| {
+        if let GenericParam::Type(TypeParam {
+            ident: type_param_ident,
+            bounds,
+            ..
+        }) = generic_param
+        {
+            // If neither the bounds in the param / in the where clause contains `Clone`,
+            // then we add the `Clone` bound
+            let where_bounds_for_type_contains_clone =
+                if let Some(where_clause) = where_clause.as_ref() {
+                    where_clause
+                        .predicates
+                        .iter()
+                        .filter_map(|predicate| {
+                            if let WherePredicate::Type(PredicateType {
+                                bounded_ty: Type::Path(TypePath { path, .. }),
+                                bounds,
+                                ..
+                            }) = predicate
+                            {
+                                if path.segments.len() == 1 {
+                                    if let Some(PathSegment {
+                                        ident: predicate_ident,
+                                        ..
+                                    }) = path.segments.last()
+                                    {
+                                        if type_param_ident == predicate_ident {
+                                            // This where predicate is for the type param
+                                            return Some(bounds);
+                                        }
+                                    }
+                                }
+                            }
+                            None
+                        })
+                        .any(|bounds| bounds_contains_clone(bounds.iter()))
+                } else {
+                    false
+                };
+            if !bounds_contains_clone(bounds.iter()) && !where_bounds_for_type_contains_clone {
+                // Add the `Clone` bound
+                //
+                // We can't add this to the type bounds, because something makes Rust error:
+                //
+                // ```text
+                // error[E0658]: associated type bounds are unstable
+                //   --> examples/generics.rs:13:1
+                //    |
+                // 13 | #[enser::enser]
+                //    | ^^^^^^^^^^^^^^^
+                //    |
+                //    = note: see issue #52662 <https://github.com/rust-lang/rust/issues/52662> for more information
+                //    = help: add `#![feature(associated_type_bounds)]` to the crate attributes to enable
+                //    = note: this error originates in the attribute macro `enser::enser` (in Nightly builds, run with -Z macro-backtrace for more info)
+                // For more information about this error, try `rustc --explain E0658`.
+                // ```
+                //
+                // Possibly one of the serde generated impls.
+                if let Some(where_clause) = where_clause.as_mut() {
+                    let where_predicate_exists = where_clause
+                        .predicates
+                        .iter_mut()
+                        .filter_map(|predicate| {
+                            if let WherePredicate::Type(PredicateType {
+                                bounded_ty: Type::Path(TypePath { path, .. }),
+                                bounds,
+                                ..
+                            }) = predicate
+                            {
+                                if path.segments.len() == 1 {
+                                    if let Some(PathSegment {
+                                        ident: predicate_ident,
+                                        ..
+                                    }) = path.segments.last()
+                                    {
+                                        if type_param_ident == predicate_ident {
+                                            // This where predicate is for the type param
+                                            return Some(bounds);
+                                        }
+                                    }
+                                }
+                            }
+                            None
+                        })
+                        // Only apply `Clone` to one predicate
+                        .next()
+                        .map(|bounds| {
+                            bounds.push(parse_quote!(std::clone::Clone));
+                            true
+                        })
+                        .unwrap_or(false);
+
+                    if !where_predicate_exists {
+                        // Need to add one for this type parameter
+                        where_clause
+                            .predicates
+                            .push(parse_quote!(#type_param_ident: std::clone::Clone))
+                    }
+                } else {
+                    // We need to attach the where clause
+                    *where_clause = Some(parse_quote!(where #type_param_ident: std::clone::Clone,));
+                }
+            }
+        }
+    });
 
     let generics_split = the_enum.generics.split_for_impl();
     let the_enum_from_enser = impl_the_enum_from_enser(the_enum, &enser, &generics_split);
@@ -62,6 +178,18 @@ fn impl_enser_derive(the_enum: &mut ItemEnum) -> proc_macro2::TokenStream {
             #enser_from_the_enum
         }
     }
+}
+
+fn bounds_contains_clone<'bounds>(
+    mut bounds: impl Iterator<Item = &'bounds TypeParamBound>,
+) -> bool {
+    bounds.any(|bound| {
+        matches!(
+                    bound,
+                    TypeParamBound::Trait(TraitBound { path, .. }) if matches!(
+                        path.segments.last(),
+                        Some(PathSegment { ident, .. }) if ident == "Clone"))
+    })
 }
 
 fn attach_tuple_to_unit_variants(enser: &mut ItemEnum) {
