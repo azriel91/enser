@@ -30,7 +30,7 @@
 //! Add the following to `Cargo.toml`
 //!
 //! ```toml
-//! enser = "0.1.1"
+//! enser = "0.1.2"
 //! ```
 //!
 //! ```rust

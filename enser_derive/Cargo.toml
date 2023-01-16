@@ -1,7 +1,7 @@
 [package]
 name = "enser_derive"
 authors = ["Azriel Hoh <azriel91@gmail.com>"]
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "Proc macro for `enser` crate."
 repository = "https://github.com/azriel91/enser"
