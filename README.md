@@ -7,6 +7,30 @@
 
 Enum Serialization with Tag
 
+```diff
+ # serde_yaml -- every variant starts with a !Tag
+ enser:
+-- Tbd
+-- None
++- !Tbd null
++- !None null
+ - !Some 123
+ - !Named
+   value: 456
+
+ # serde_json -- every variant is an object
+ {
+   "enser": [
+-    "Tbd",
+-    "None",
++    { "Tbd": null },
++    { "None": null },
+     { "Some": 123 },
+     { "Named": { "value": 456 } }
+   ]
+ }
+```
+
 
 ## Usage
 
@@ -16,24 +40,10 @@ Add the following to `Cargo.toml`
 enser = "0.1.1"
 ```
 
-```diff
-  #[derive(Debug, Deserialize, Serialize)]
-+ #[enser::enser]
-  enum MyEnum {
-      Tbd,
-      None,
-      Some(u32),
-      Named { value: u32 },
-  }
-```
-
-
-## Rationale
-
-Given the following enum:
-
 ```rust
-#[derive(Debug, Deserialize, Serialize)]
+#[enser::enser] // <-- just add this
+                // Note: It *must* come above `#[derive(Clone, Deserialize, Serialize)]`
+#[derive(Clone, Debug, Deserialize, Serialize)]
 enum MyEnum {
     Tbd,
     None,
@@ -42,57 +52,6 @@ enum MyEnum {
 }
 ```
 
-When serializing `Vec<MyEnum>`, the output is:
-
-```yaml
-# serde_yaml
-my_enums:
-- Tbd
-- None
-- !Some 123
-- !Named
-  value: 456
-
-# serde_json
-{
-  "without_tuple": [
-    "Tbd",
-    "None",
-    { "Some": 123 }
-    { "Named": { "value": 456 } }
-  ]
-}
-```
-
-When the `#[enser::enser]` attribute is added:
-
-```diff
-  #[derive(Debug, Deserialize, Serialize)]
-+ #[enser::enser]
-  enum MyEnum { .. }
-```
-
-The output is:
-
-```yaml
-# serde_yaml -- a !Tag is used for each variant
-my_enums:
-- !Tbd null
-- !None null
-- !Some 123
-- !Named
-  value: 456
-
-# serde_json -- every variant is an object
-{
-  "my_enums": [
-    { "Tbd": null },
-    { "None": null },
-    { "Some": 123 },
-    { "Named": { "value": 456 } }
-  ]
-}
-```
 
 ## License
 

@@ -23,8 +23,8 @@ enum WithTuple {
     Named { value: u32 },
 }
 
-#[derive(Debug, Deserialize, Serialize)]
 #[enser::enser]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 enum Enser {
     Tbd,
     None,
@@ -47,8 +47,8 @@ with_tuple:
 - !Named
   value: 456
 enser:
-- Tbd
-- None
+- !Tbd null
+- !None null
 - !Some 123
 - !Named
   value: 456
@@ -72,8 +72,8 @@ enser:
     { "Named": { "value": 456 } }
   ],
   "enser": [
-    "Tbd",
-    "None",
+    { "Tbd": null },
+    { "None": null },
     { "Some": 123 },
     { "Named": { "value": 456 } }
   ]

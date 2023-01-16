@@ -10,12 +10,12 @@ trait Trait {}
 impl Trait for u8 {}
 impl Trait for u16 {}
 
-#[derive(Debug, Deserialize, Serialize)]
 #[enser::enser]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 enum Enser<T, U>
 where
-    T: Trait,
-    U: Trait,
+    T: Trait + Clone,
+    U: Trait + Clone,
 {
     Tbd,
     None,
