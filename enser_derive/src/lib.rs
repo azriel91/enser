@@ -7,6 +7,7 @@ extern crate syn;
 
 use proc_macro::TokenStream;
 
+use proc_macro2::Ident;
 use proc_macro_roids::{FieldsExt, IdentExt};
 use syn::{parse_macro_input, Fields, ImplGenerics, ItemEnum, TypeGenerics, WhereClause};
 
@@ -24,10 +25,11 @@ fn impl_enser_derive(the_enum: &mut ItemEnum) -> proc_macro2::TokenStream {
     let mut enser = the_enum.clone();
 
     // generate separate enum, attach `(())` to every unit variant
+    let enser_mod: Ident = parse_quote!(__enser);
     let enser_enum_name = enser.ident.append("Serde");
 
     // MyEnum -> MyEnumSerde
-    enser.vis = parse_quote!();
+    enser.vis = parse_quote!(pub(super));
     enser.ident = enser_enum_name;
 
     // Variant -> Variant(())
@@ -41,7 +43,7 @@ fn impl_enser_derive(the_enum: &mut ItemEnum) -> proc_macro2::TokenStream {
     let ty_generics = &generics_split.0;
     let ty_generics = quote!(#ty_generics);
     let enser_enum_name = &enser.ident;
-    let enser_enum_path_str = format!("{enser_enum_name}{ty_generics}");
+    let enser_enum_path_str = format!("{enser_mod}::{enser_enum_name}{ty_generics}");
     the_enum
         .attrs
         .push(parse_quote!(#[serde(from = #enser_enum_path_str, into = #enser_enum_path_str)]));
@@ -49,11 +51,16 @@ fn impl_enser_derive(the_enum: &mut ItemEnum) -> proc_macro2::TokenStream {
     quote! {
         #the_enum
 
-        #enser
+        mod #enser_mod {
+            // Imports `serde` or `{Deserialize, Serialize}`, depending on usage.
+            use super::*;
 
-        #the_enum_from_enser
+            #enser
 
-        #enser_from_the_enum
+            #the_enum_from_enser
+
+            #enser_from_the_enum
+        }
     }
 }
 

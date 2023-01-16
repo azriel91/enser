@@ -45,6 +45,7 @@
 //!     Some(u32),
 //!     Named { value: u32 },
 //! }
+//! # fn main() {}
 //! ```
 
 pub use enser_derive::enser;
