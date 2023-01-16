@@ -37,7 +37,7 @@ Enum Serialization with Tag
 Add the following to `Cargo.toml`
 
 ```toml
-enser = "0.1.2"
+enser = "0.1.3"
 ```
 
 ```rust

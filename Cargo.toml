@@ -1,6 +1,6 @@
 [package]
 name = "enser"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["Azriel Hoh <azriel91@gmail.com>"]
 edition = "2021"
 description = "Enum serialization with tag"
@@ -12,7 +12,7 @@ keywords = ["enum", "tag", "serde"]
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-enser_derive = { path = "enser_derive", version = "0.1.2" }
+enser_derive = { path = "enser_derive", version = "0.1.3" }
 
 [dev-dependencies]
 serde = { version = "1.0.152", features = ["derive"] }
