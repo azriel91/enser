@@ -9,7 +9,7 @@ use proc_macro::TokenStream;
 
 use proc_macro2::Ident;
 use proc_macro_roids::{FieldsExt, IdentExt};
-use syn::{parse_macro_input, Fields, ItemEnum};
+use syn::{parse_macro_input, Fields, ImplGenerics, ItemEnum, TypeGenerics, WhereClause};
 
 #[proc_macro_attribute]
 pub fn enser(_args: TokenStream, input: TokenStream) -> TokenStream {
@@ -34,20 +34,20 @@ fn impl_enser_derive(the_enum: &mut ItemEnum) -> proc_macro2::TokenStream {
     // Variant -> Variant(())
     attach_tuple_to_unit_variants(&mut enser);
 
-    let the_enum_from_enser = impl_the_enum_from_enser(the_enum, &enser);
-    let enser_from_the_enum = impl_enser_from_the_enum(the_enum, &enser);
+    let generics_split = the_enum.generics.split_for_impl();
+    let the_enum_from_enser = impl_the_enum_from_enser(the_enum, &enser, &generics_split);
+    let enser_from_the_enum = impl_enser_from_the_enum(the_enum, &enser, &generics_split);
 
     // Tell serde to serialize and deserialize with `enser`
     the_enum
         .attrs
         .push(parse_quote!(#[serde(from = #enser_enum_path_str, into = #enser_enum_path_str)]));
-    let the_enum_name = &the_enum.ident;
 
     quote! {
         #the_enum
 
         mod #enser_mod {
-            use super::#the_enum_name;
+            use super::*;
 
             #enser
 
@@ -72,7 +72,11 @@ fn attach_tuple_to_unit_variants(enser: &mut ItemEnum) {
         .for_each(|fields| *fields = Fields::Unnamed(parse_quote!((()))));
 }
 
-fn impl_the_enum_from_enser(the_enum: &ItemEnum, enser: &ItemEnum) -> proc_macro2::TokenStream {
+fn impl_the_enum_from_enser(
+    the_enum: &ItemEnum,
+    enser: &ItemEnum,
+    generics_split: &(ImplGenerics<'_>, TypeGenerics<'_>, Option<&WhereClause>),
+) -> proc_macro2::TokenStream {
     let the_enum_name = &the_enum.ident;
     let enser_enum_name = &enser.ident;
 
@@ -92,9 +96,11 @@ fn impl_the_enum_from_enser(the_enum: &ItemEnum, enser: &ItemEnum) -> proc_macro
         }
     });
 
+    let (impl_generics, ty_generics, where_clause) = generics_split;
+
     quote! {
-        impl From<#enser_enum_name> for #the_enum_name {
-            fn from(enser_enum: #enser_enum_name) -> Self {
+        impl #impl_generics From<#enser_enum_name #ty_generics> for #the_enum_name #ty_generics #where_clause {
+            fn from(enser_enum: #enser_enum_name #ty_generics) -> Self {
                 match enser_enum {
                     #(#variant_mappings),*
                 }
@@ -103,7 +109,11 @@ fn impl_the_enum_from_enser(the_enum: &ItemEnum, enser: &ItemEnum) -> proc_macro
     }
 }
 
-fn impl_enser_from_the_enum(the_enum: &ItemEnum, enser: &ItemEnum) -> proc_macro2::TokenStream {
+fn impl_enser_from_the_enum(
+    the_enum: &ItemEnum,
+    enser: &ItemEnum,
+    generics_split: &(ImplGenerics<'_>, TypeGenerics<'_>, Option<&WhereClause>),
+) -> proc_macro2::TokenStream {
     let the_enum_name = &the_enum.ident;
     let enser_enum_name = &enser.ident;
 
@@ -123,9 +133,11 @@ fn impl_enser_from_the_enum(the_enum: &ItemEnum, enser: &ItemEnum) -> proc_macro
         }
     });
 
+    let (impl_generics, ty_generics, where_clause) = generics_split;
+
     quote! {
-        impl From<#the_enum_name> for #enser_enum_name {
-            fn from(the_enum: #the_enum_name) -> Self {
+        impl #impl_generics From<#the_enum_name #ty_generics> for #enser_enum_name #ty_generics #where_clause {
+            fn from(the_enum: #the_enum_name #ty_generics) -> Self {
                 match the_enum {
                     #(#variant_mappings),*
                 }
