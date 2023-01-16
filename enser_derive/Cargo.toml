@@ -1,10 +1,10 @@
 [package]
 name = "enser_derive"
 authors = ["Azriel Hoh <azriel91@gmail.com>"]
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
-description = "Data proc macro for for the peace automation framework."
-repository = "https://github.com/azriel91/peace"
+description = "Proc macro for `enser` crate."
+repository = "https://github.com/azriel91/enser"
 documentation = "https://docs.rs/enser_derive/"
 readme = "../README.md"
 categories = ["encoding"]

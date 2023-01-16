@@ -13,7 +13,7 @@ Enum Serialization with Tag
 Add the following to `Cargo.toml`
 
 ```toml
-enser = "0.1.0"
+enser = "0.1.1"
 ```
 
 ```diff
