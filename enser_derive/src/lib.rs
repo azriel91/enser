@@ -29,7 +29,8 @@ fn impl_enser_derive(the_enum: &mut ItemEnum) -> proc_macro2::TokenStream {
     let mut enser = the_enum.clone();
 
     // generate separate enum, attach `(())` to every unit variant
-    let enser_mod: Ident = parse_quote!(__enser);
+    let enser_mod: Ident = parse_quote!(_enser);
+    let enser_mod = enser_mod.append(&the_enum.ident);
     let enser_enum_name = enser.ident.append("Serde");
 
     // MyEnum -> MyEnumSerde

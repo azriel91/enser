@@ -53,6 +53,25 @@ enum MyEnum {
 ```
 
 
+## Generics
+
+This will automatically work for generic types:
+
+```rust
+#[enser::enser]
+#[derive(Clone, Debug, Deserialize, Serialize)]
+enum MyEnum<T, U> {
+    None,
+    Some(T),
+    Named { value: U },
+}
+```
+
+**However**, it also adds a `Clone` bound to each type parameter, so all `impl` blocks will require the type parameters to have a `Clone` bound.
+
+If you can find a way for the `generics` example to work without causing the `Clone` bound propagation, then please let me know / submit a pull request!
+
+
 ## License
 
 Licensed under either of
