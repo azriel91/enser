@@ -17,7 +17,7 @@ doctest = false
 test = false
 
 [dependencies]
-syn = { version = "1.0.107", features = ["full"] }
-quote = "1.0.23"
-proc-macro2 = "1.0.49"
-proc_macro_roids = "0.7.0"
+syn = { version = "2.0.18", features = ["full"] }
+quote = "1.0.28"
+proc-macro2 = "1.0.59"
+proc_macro_roids = "0.8.0"
