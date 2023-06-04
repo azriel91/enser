@@ -30,7 +30,7 @@
 //! Add the following to `Cargo.toml`
 //!
 //! ```toml
-//! enser = "0.1.3"
+//! enser = "0.1.4"
 //! ```
 //!
 //! ```rust
@@ -54,6 +54,8 @@
 //! This will automatically work for generic types:
 //!
 //! ```rust
+//! # use serde::{Deserialize, Serialize};
+//! #
 //! #[enser::enser]
 //! #[derive(Clone, Debug, Deserialize, Serialize)]
 //! enum MyEnum<T, U> {
@@ -61,6 +63,7 @@
 //!     Some(T),
 //!     Named { value: U },
 //! }
+//! # fn main() {}
 //! ```
 //!
 //! **However**, it also adds a `Clone` bound to each type parameter, so all
